@@ -1,10 +1,14 @@
 from fastapi import FastAPI
+from .routers import auth
 
 app = FastAPI(
     title="Web Frameworks Tutorial API",
     description="API for the Web Frameworks Tutorial Platform",
     version="1.0.0"
 )
+
+# Include routers
+app.include_router(auth.router)
 
 @app.get("/")
 async def root():
