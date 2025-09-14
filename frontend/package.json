@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@monaco-editor/react": "^4.6.0",
     "axios": "^1.6.2",
     "highlight.js": "^11.11.1",

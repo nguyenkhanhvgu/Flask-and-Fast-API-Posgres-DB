@@ -82,6 +82,33 @@ web-frameworks-tutorial/
   - Username: `tutorial_user`
   - Password: `tutorial_password`
 
+- **pgAdmin**: http://localhost:5050
+  - Email: `admin@tutorial.com`
+  - Password: `admin123`
+
+## Database Management with pgAdmin
+
+pgAdmin is included for easy database management:
+
+1. **Access pgAdmin**: Open http://localhost:5050 in your browser
+
+2. **Login Credentials**:
+   - Email: `admin@tutorial.com`
+   - Password: `admin123`
+
+3. **Connect to Database**:
+   - Right-click "Servers" → "Register" → "Server"
+   - **General Tab**:
+     - Name: `Tutorial Database`
+   - **Connection Tab**:
+     - Host: `postgres` (Docker service name)
+     - Port: `5432`
+     - Database: `tutorial_db`
+     - Username: `tutorial_user`
+     - Password: `tutorial_password`
+
+4. **Pre-configured Server**: The database connection is pre-configured and should appear automatically.
+
 ## Development Commands
 
 ### Backend

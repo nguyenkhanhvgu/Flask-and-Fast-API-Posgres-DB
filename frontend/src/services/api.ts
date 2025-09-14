@@ -185,6 +185,87 @@ class ApiClient {
     return response.data;
   }
 
+  // Search methods
+  async searchContent(params: {
+    query?: string;
+    technology?: string;
+    difficulty_level?: string;
+    exercise_type?: string;
+    completion_status?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await this.client.get('/search/', { params });
+    return response.data;
+  }
+
+  async getSearchSuggestions(query: string, limit: number = 10) {
+    const response = await this.client.get('/search/suggestions', {
+      params: { query, limit }
+    });
+    return response.data;
+  }
+
+  async getContentFilters() {
+    const response = await this.client.get('/search/filters');
+    return response.data;
+  }
+
+  async searchModules(params: {
+    query?: string;
+    technology?: string;
+    difficulty_level?: string;
+    completion_status?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await this.client.get('/search/modules', { params });
+    return response.data;
+  }
+
+  async searchLessons(params: {
+    query?: string;
+    technology?: string;
+    difficulty_level?: string;
+    completion_status?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await this.client.get('/search/lessons', { params });
+    return response.data;
+  }
+
+  async searchExercises(params: {
+    query?: string;
+    technology?: string;
+    difficulty_level?: string;
+    exercise_type?: string;
+    completion_status?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await this.client.get('/search/exercises', { params });
+    return response.data;
+  }
+
+  async getPopularContent(params: {
+    content_type?: string;
+    technology?: string;
+    limit?: number;
+  }) {
+    const response = await this.client.get('/search/popular', { params });
+    return response.data;
+  }
+
+  async getRecentContent(params: {
+    content_type?: string;
+    technology?: string;
+    limit?: number;
+  }) {
+    const response = await this.client.get('/search/recent', { params });
+    return response.data;
+  }
+
   // Generic request method for custom requests
   async request<T = any>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.request(config);

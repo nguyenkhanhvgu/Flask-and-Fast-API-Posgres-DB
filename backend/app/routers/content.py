@@ -376,75 +376,7 @@ async def delete_exercise(
     db.commit()
 
 
-# Search endpoints
-@router.get("/search/content")
-async def search_content(
-    query: Optional[str] = Query(None, description="Search query"),
-    technology: Optional[str] = Query(None, description="Filter by technology"),
-    difficulty_level: Optional[str] = Query(None, description="Filter by difficulty level"),
-    exercise_type: Optional[str] = Query(None, description="Filter by exercise type"),
-    limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
-    offset: int = Query(0, ge=0, description="Number of results to skip"),
-    db: Session = Depends(get_db)
-):
-    """Search across modules, lessons, and exercises."""
-    results = {
-        "modules": [],
-        "lessons": [],
-        "exercises": []
-    }
-    
-    # Search modules
-    module_query = db.query(LearningModule)
-    if query:
-        module_query = module_query.filter(
-            or_(
-                LearningModule.name.ilike(f"%{query}%"),
-                LearningModule.description.ilike(f"%{query}%")
-            )
-        )
-    if technology:
-        module_query = module_query.filter(LearningModule.technology == technology)
-    if difficulty_level:
-        module_query = module_query.filter(LearningModule.difficulty_level == difficulty_level)
-    
-    results["modules"] = module_query.order_by(LearningModule.order_index).limit(limit//3).all()
-    
-    # Search lessons
-    lesson_query = db.query(Lesson).join(LearningModule)
-    if query:
-        lesson_query = lesson_query.filter(
-            or_(
-                Lesson.title.ilike(f"%{query}%"),
-                Lesson.content.ilike(f"%{query}%")
-            )
-        )
-    if technology:
-        lesson_query = lesson_query.filter(LearningModule.technology == technology)
-    if difficulty_level:
-        lesson_query = lesson_query.filter(LearningModule.difficulty_level == difficulty_level)
-    
-    results["lessons"] = lesson_query.order_by(Lesson.order_index).limit(limit//3).all()
-    
-    # Search exercises
-    exercise_query = db.query(Exercise).join(Lesson).join(LearningModule)
-    if query:
-        exercise_query = exercise_query.filter(
-            or_(
-                Exercise.title.ilike(f"%{query}%"),
-                Exercise.description.ilike(f"%{query}%")
-            )
-        )
-    if technology:
-        exercise_query = exercise_query.filter(LearningModule.technology == technology)
-    if difficulty_level:
-        exercise_query = exercise_query.filter(LearningModule.difficulty_level == difficulty_level)
-    if exercise_type:
-        exercise_query = exercise_query.filter(Exercise.exercise_type == exercise_type)
-    
-    results["exercises"] = exercise_query.order_by(Exercise.order_index).limit(limit//3).all()
-    
-    return results
+
 
 
 # Content statistics endpoint

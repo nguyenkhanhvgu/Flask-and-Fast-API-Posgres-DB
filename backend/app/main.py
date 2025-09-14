@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import auth, content, progress, exercises
+from .routers import auth, content, progress, exercises, search
 
 app = FastAPI(
     title="Web Frameworks Tutorial API",
@@ -12,6 +12,7 @@ app.include_router(auth.router)
 app.include_router(content.router)
 app.include_router(progress.router)
 app.include_router(exercises.router)
+app.include_router(search.router)
 
 @app.get("/")
 async def root():

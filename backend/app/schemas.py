@@ -176,8 +176,49 @@ class ContentSearchParams(BaseModel):
     technology: Optional[str] = Field(None, min_length=1, max_length=50)
     difficulty_level: Optional[str] = Field(None, pattern="^(beginner|intermediate|advanced)$")
     exercise_type: Optional[str] = Field(None, min_length=1, max_length=50)
+    completion_status: Optional[str] = Field(None, pattern="^(not_started|in_progress|completed)$")
     limit: int = Field(default=20, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
+
+
+class SearchResult(BaseModel):
+    """Schema for individual search result."""
+    id: uuid.UUID
+    title: str
+    description: str
+    content_type: str  # "module", "lesson", "exercise"
+    technology: str
+    difficulty_level: str
+    relevance_score: float
+    url_path: str
+    
+    class Config:
+        from_attributes = True
+
+
+class SearchResponse(BaseModel):
+    """Schema for search response with results and metadata."""
+    results: list[SearchResult]
+    total_count: int
+    query: Optional[str] = None
+    filters: dict
+    suggestions: list[str] = []
+    facets: dict = {}
+
+
+class SearchSuggestion(BaseModel):
+    """Schema for search suggestions."""
+    text: str
+    type: str  # "query", "technology", "difficulty"
+    count: int
+
+
+class ContentFilter(BaseModel):
+    """Schema for content filtering options."""
+    technologies: list[str]
+    difficulty_levels: list[str]
+    exercise_types: list[str]
+    completion_statuses: list[str]
 
 
 # Progress tracking schemas

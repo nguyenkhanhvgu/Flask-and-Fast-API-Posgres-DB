@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useProgress } from '../../contexts/ProgressContext';
 import LessonNavigation from './LessonNavigation';
 import ProgressTracker from './ProgressTracker';
+import { ExerciseManager } from '../exercise';
 
 interface LessonViewerProps {
   lessonId: string;
@@ -171,24 +172,15 @@ const LessonViewer: React.FC<LessonViewerProps> = ({ lessonId, moduleId }) => {
 
       {/* Exercises Section */}
       {lesson.exercises && lesson.exercises.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-6 mb-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Exercises</h3>
-          <div className="grid gap-4">
-            {lesson.exercises.map((exercise) => (
-              <div key={exercise.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                <h4 className="font-semibold text-gray-900 mb-2">{exercise.title}</h4>
-                <p className="text-gray-600 mb-2">{exercise.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    {exercise.difficulty} • {exercise.points} points
-                  </span>
-                  <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm">
-                    Start Exercise
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="mb-8">
+          <ExerciseManager
+            lessonId={lesson.id}
+            exercises={lesson.exercises}
+            onExerciseComplete={(exerciseId, result) => {
+              console.log('Exercise completed:', exerciseId, result);
+              // Optionally update lesson progress or show completion message
+            }}
+          />
         </div>
       )}
 

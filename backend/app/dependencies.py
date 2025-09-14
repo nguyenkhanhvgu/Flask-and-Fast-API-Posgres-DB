@@ -82,3 +82,44 @@ async def get_current_active_user(
         User: Current active user
     """
     return current_user
+
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Get the current authenticated user from JWT token, but return None if no token provided.
+    
+    Args:
+        credentials: Optional HTTP Bearer credentials containing JWT token
+        db: Database session
+        
+    Returns:
+        Optional[User]: Current authenticated user or None if not authenticated
+    """
+    if not credentials:
+        return None
+    
+    try:
+        # Verify and decode the token
+        payload = verify_token(credentials.credentials)
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        # Convert string UUID to UUID object
+        try:
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            return None
+            
+    except HTTPException:
+        return None
+    
+    # Get user from database
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if user is None or not user.is_active:
+        return None
+    
+    return user

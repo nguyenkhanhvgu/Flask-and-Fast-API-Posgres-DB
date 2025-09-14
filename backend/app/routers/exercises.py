@@ -1,7 +1,7 @@
 """
 API routes for exercise management, code execution, and validation.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import uuid
@@ -208,7 +208,7 @@ async def compare_with_solution(
 @router.get("/submissions", response_model=List[ExerciseSubmissionResponse])
 async def get_user_submissions(
     exercise_id: Optional[uuid.UUID] = None,
-    limit: int = Field(default=50, ge=1, le=100),
+    limit: int = Query(default=50, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
