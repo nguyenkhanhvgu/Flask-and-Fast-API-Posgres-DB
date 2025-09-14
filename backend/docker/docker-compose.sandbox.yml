@@ -1,0 +1,29 @@
+# Docker Compose configuration for code execution sandbox
+version: '3.8'
+
+services:
+  code-sandbox:
+    build:
+      context: ./code-sandbox
+      dockerfile: Dockerfile
+    image: web-tutorial-sandbox:latest
+    container_name: code-sandbox
+    # This service is built but not run continuously
+    # It's used as a base image for code execution containers
+    profiles:
+      - build-only
+    
+  # Example of how the sandbox would be used (for reference)
+  # Individual execution containers are created dynamically by the service
+  sandbox-example:
+    image: web-tutorial-sandbox:latest
+    command: python -c "print('Sandbox is ready')"
+    mem_limit: 128m
+    cpus: 0.5
+    network_mode: none
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    user: sandbox
+    profiles:
+      - example

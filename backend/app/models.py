@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Boolean, DateTime, ForeignKey, UniqueConstraint, Index
+from sqlalchemy import Column, String, Integer, Text, Boolean, DateTime, ForeignKey, UniqueConstraint, Index, TypeDecorator
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -6,10 +6,43 @@ import uuid
 from .database import Base
 
 
+class GUID(TypeDecorator):
+    """Platform-independent GUID type.
+    Uses PostgreSQL's UUID type, otherwise uses CHAR(36), storing as stringified hex values.
+    """
+    impl = String
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(UUID())
+        else:
+            return dialect.type_descriptor(String(36))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == 'postgresql':
+            return str(value)
+        else:
+            if not isinstance(value, uuid.UUID):
+                return str(uuid.UUID(value))
+            else:
+                return str(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            if not isinstance(value, uuid.UUID):
+                return uuid.UUID(value)
+            return value
+
+
 class User(Base):
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
@@ -25,7 +58,7 @@ class User(Base):
 class LearningModule(Base):
     __tablename__ = "learning_modules"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
     description = Column(Text)
     technology = Column(String(50), nullable=False, index=True)
@@ -47,8 +80,8 @@ class LearningModule(Base):
 class Lesson(Base):
     __tablename__ = "lessons"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    module_id = Column(UUID(as_uuid=True), ForeignKey("learning_modules.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    module_id = Column(GUID(), ForeignKey("learning_modules.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)
     order_index = Column(Integer, nullable=False)
@@ -70,8 +103,8 @@ class Lesson(Base):
 class Exercise(Base):
     __tablename__ = "exercises"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    lesson_id = Column(GUID(), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     exercise_type = Column(String(50), nullable=False, index=True)
@@ -98,9 +131,9 @@ class Exercise(Base):
 class UserProgress(Base):
     __tablename__ = "user_progress"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    lesson_id = Column(GUID(), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
     status = Column(String(20), default="not_started", index=True)
     completion_date = Column(DateTime(timezone=True))
     time_spent = Column(Integer, default=0)  # in seconds
@@ -124,8 +157,8 @@ class UserProgress(Base):
 class ExerciseTestCase(Base):
     __tablename__ = "exercise_test_cases"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    exercise_id = Column(UUID(as_uuid=True), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    exercise_id = Column(GUID(), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
     input_data = Column(Text)
     expected_output = Column(Text, nullable=False)
     is_hidden = Column(Boolean, default=False)
@@ -144,8 +177,8 @@ class ExerciseTestCase(Base):
 class ExerciseHint(Base):
     __tablename__ = "exercise_hints"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    exercise_id = Column(UUID(as_uuid=True), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    exercise_id = Column(GUID(), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
     hint_text = Column(Text, nullable=False)
     order_index = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -162,9 +195,9 @@ class ExerciseHint(Base):
 class ExerciseSubmission(Base):
     __tablename__ = "exercise_submissions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    exercise_id = Column(UUID(as_uuid=True), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    exercise_id = Column(GUID(), ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     submitted_code = Column(Text, nullable=False)
     is_correct = Column(Boolean, default=False)
     score = Column(Integer, default=0)
@@ -186,9 +219,9 @@ class ExerciseSubmission(Base):
 class UserBookmark(Base):
     __tablename__ = "user_bookmarks"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    lesson_id = Column(GUID(), ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
